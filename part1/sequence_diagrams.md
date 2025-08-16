@@ -1,241 +1,155 @@
-# Sequence Diagrams for HBnB Evolution API Calls
+# Sequence Diagrams for API Calls
 
-## Overview
-These sequence diagrams illustrate the interaction flow between the different layers of the HBnB Evolution application based on the three-layer architecture with facade patterns.
+## Objective
+The following sequence diagrams illustrate the interaction between the different layers in the HBnB application—**Presentation** (`ServiceAPI`), **Business Logic** (`Processor` + domain models), and **Persistence** (Repositories + Database)—for handling key API calls. They reflect your diagrams: unique `UUID4` IDs and timestamps (`CreatedAt`, `UpdatedAt`), owner linkage on `Place`, rating bounds on `Review`, and the many-to-many relation between `Place` and `Amenity`.
 
-## 1. User Registration Sequence Diagram
+---
+
+## 1. User Registration
 
 ```mermaid
 sequenceDiagram
-    participant Client
-    participant APIE as API Endpoints
-    participant SA as ServiceAPI
-    participant PRC as Processor
     participant User
-    participant DT as Data
-    participant REPO as Repositories
+    participant ServiceAPI as ServiceAPI (Presentation)
+    participant Processor as Processor (Business Logic)
+    participant UserRepo as UserRepository (Persistence)
     participant DB as Database
-    
-    Client->>APIE: POST /users/register
-    Note over Client,APIE: {phoneNum, firstName, lastName, email, password}
-    
-    APIE->>SA: registerUser(userData)
-    SA->>SA: validateInputData()
-    SA->>SA: checkEmailUniqueness()
-    
-    SA->>PRC: processUserRegistration(userData)
-    PRC->>User: register(phoneNum, firstName, lastName)
-    User->>User: generateUUID()
-    User->>User: setTimestamps()
-    User->>User: hashPassword()
-    
-    User->>DT: saveUser(user)
-    DT->>REPO: save(user)
-    REPO->>DB: INSERT INTO users
-    DB-->>REPO: user_id
-    REPO-->>DT: saved_user
-    DT-->>User: confirmation
-    User-->>PRC: user_object
-    PRC-->>SA: registration_result
-    SA-->>APIE: user_response
-    APIE-->>Client: 201 Created + user_data
-```
 
-## 2. Place Creation Sequence Diagram
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant APIE as API Endpoints
-    participant SA as ServiceAPI
-    participant PRC as Processor
-    participant Place
-    participant User
-    participant DT as Data
-    participant REPO as Repositories
-    participant DB as Database
-    
-    Client->>APIE: POST /places
-    Note over Client,APIE: {title, description, price, latitude, longitude}
-    
-    APIE->>SA: createPlace(placeData, userId)
-    SA->>SA: validatePlaceData()
-    SA->>SA: verifyUserOwnership(userId)
-    
-    SA->>PRC: processPlaceCreation(placeData, userId)
-    PRC->>User: getUserById(userId)
-    User->>DT: findUser(userId)
-    DT->>REPO: findById(userId)
-    REPO->>DB: SELECT FROM users
-    DB-->>REPO: user_data
-    REPO-->>DT: user_object
-    DT-->>User: user_found
-    User-->>PRC: user_verified
-    
-    PRC->>Place: createP(title, description, price, latitude, longitude)
-    Place->>Place: generateUUID()
-    Place->>Place: setTimestamps()
-    Place->>Place: validateCoordinates()
-    Place->>Place: validatePrice()
-    
-    Place->>DT: savePlace(place)
-    DT->>REPO: save(place)
-    REPO->>DB: INSERT INTO places
-    DB-->>REPO: place_id
-    REPO-->>DT: saved_place
-    DT-->>Place: confirmation
-    Place-->>PRC: place_object
-    PRC-->>SA: creation_result
-    SA-->>APIE: place_response
-    APIE-->>Client: 201 Created + place_data
-```
-
-## 3. Review Submission Sequence Diagram
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant APIE as API Endpoints
-    participant SA as ServiceAPI
-    participant PRC as Processor
-    participant Review
-    participant Place
-    participant User
-    participant DT as Data
-    participant REPO as Repositories
-    participant DB as Database
-    
-    Client->>APIE: POST /places/{placeId}/reviews
-    Note over Client,APIE: {rating, comment}
-    
-    APIE->>SA: createReview(placeId, userId, reviewData)
-    SA->>SA: validateReviewData()
-    
-    SA->>PRC: processReviewCreation(placeId, userId, reviewData)
-    
-    PRC->>Place: getPlaceById(placeId)
-    Place->>DT: findPlace(placeId)
-    DT->>REPO: findById(placeId)
-    REPO->>DB: SELECT FROM places
-    DB-->>REPO: place_data
-    REPO-->>DT: place_object
-    DT-->>Place: place_found
-    Place-->>PRC: place_exists
-    
-    PRC->>User: getUserById(userId)
-    User->>DT: findUser(userId)
-    DT->>REPO: findById(userId)
-    REPO->>DB: SELECT FROM users
-    DB-->>REPO: user_data
-    REPO-->>DT: user_object
-    DT-->>User: user_found
-    User-->>PRC: user_exists
-    
-    PRC->>Review: createRev(rating, comment)
-    Review->>Review: generateUUID()
-    Review->>Review: setTimestamps()
-    Review->>Review: validateRating()
-    Review->>Review: setPlaceAndUser(placeId, userId)
-    
-    Review->>DT: saveReview(review)
-    DT->>REPO: save(review)
-    REPO->>DB: INSERT INTO reviews
-    DB-->>REPO: review_id
-    REPO-->>DT: saved_review
-    DT-->>Review: confirmation
-    Review-->>PRC: review_object
-    PRC-->>SA: creation_result
-    SA-->>APIE: review_response
-    APIE-->>Client: 201 Created + review_data
-```
-
-## 4. Fetching Places List Sequence Diagram
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant APIE as API Endpoints
-    participant SA as ServiceAPI
-    participant PRC as Processor
-    participant Place
-    participant Amenity
-    participant DT as Data
-    participant REPO as Repositories
-    participant DB as Database
-    
-    Client->>APIE: GET /places?page=1&limit=10
-    Note over Client,APIE: Query parameters for pagination
-    
-    APIE->>SA: getPlaces(pagination, filters)
-    SA->>SA: parsePaginationParams()
-    SA->>SA: validateFilters()
-    
-    SA->>PRC: processPlacesRetrieval(pagination, filters)
-    PRC->>Place: listPlaces()
-    Place->>DT: getPlaces(pagination, filters)
-    DT->>REPO: findAll(pagination, filters)
-    REPO->>DB: SELECT FROM places LIMIT offset, limit
-    DB-->>REPO: places_data
-    REPO-->>DT: places_list
-    DT-->>Place: places_found
-    Place-->>PRC: places_objects
-    
-    PRC->>PRC: enrichPlacesWithAmenities(places)
-    
-    loop for each place
-        PRC->>Amenity: getAmenitiesForPlace(placeId)
-        Amenity->>DT: findAmenitiesByPlace(placeId)
-        DT->>REPO: findAmenitiesByPlace(placeId)
-        REPO->>DB: SELECT amenities FROM place_amenities WHERE place_id = ?
-        DB-->>REPO: amenities_data
-        REPO-->>DT: amenities_list
-        DT-->>Amenity: amenities_found
-        Amenity-->>PRC: place_amenities
+    User->>ServiceAPI: POST /v1/users {first_name,last_name,email,password,phone,admin?}
+    ServiceAPI->>Processor: registerUser(dto)
+    Processor->>Processor: validate email format, pw length
+    Processor->>UserRepo: existsByEmail(email)?
+    UserRepo->>DB: SELECT 1 FROM users WHERE email=?
+    DB-->>UserRepo: 0/1
+    alt email taken
+        UserRepo-->>Processor: true
+        Processor-->>ServiceAPI: ConflictError
+        ServiceAPI-->>User: 409 CONFLICT
+    else new email
+        UserRepo-->>Processor: false
+        Processor->>Processor: hash password; set id=UUID4; set CreatedAt/UpdatedAt
+        Processor->>UserRepo: save(user)
+        UserRepo->>DB: INSERT INTO users (...)
+        DB-->>UserRepo: ok
+        UserRepo-->>Processor: persisted user
+        Processor-->>ServiceAPI: user DTO (no password)
+        ServiceAPI-->>User: 201 CREATED {id, names, email, admin, created_at}
     end
-    
-    PRC-->>SA: enriched_places_response
-    SA-->>APIE: places_response
-    APIE-->>Client: 200 OK + places_list
 ```
 
-## API Call Descriptions
+**Explanation**: ServiceAPI forwards to Processor, which validates, enforces unique email, hashes the password, assigns UUID4 and timestamps, persists via UserRepository, and returns a safe DTO.
 
-### 1. User Registration
-**Purpose**: Allows new users to create accounts in the system
-**Key Steps**:
-- Input validation and email uniqueness check through ServiceAPI
-- User creation via Processor facade
-- Password hashing and UUID generation
-- Data persistence through Data facade
+## 2. Place Creation
 
-### 2. Place Creation
-**Purpose**: Enables users to list their properties
-**Key Steps**:
-- User ownership verification
-- Place data validation (coordinates, price)
-- Place creation with geographic constraints
-- Data persistence with proper relationships
+```mermaid
+sequenceDiagram
+    participant User
+    participant ServiceAPI as ServiceAPI (Presentation)
+    participant Processor as Processor (Business Logic)
+    participant PlaceRepo as PlaceRepository (Persistence)
+    participant AmenityRepo as AmenityRepository (Persistence)
+    participant DB as Database
 
-### 3. Review Submission
-**Purpose**: Allows users to provide feedback on places they've visited
-**Key Steps**:
-- Verification of place and user existence
-- Review data validation (rating range 1-5)
-- Review creation with proper associations
-- Data persistence with foreign key relationships
+    User->>ServiceAPI: POST /v1/places {title,description,price,lat,lon,amenity_ids[]}
+    ServiceAPI->>Processor: createPlace(dto, authUserId)
+    Processor->>Processor: validate price>=0, lat∈[-90,90], lon∈[-180,180]
+    Processor->>Processor: owner = authUserId; set id=UUID4; timestamps
 
-### 4. Fetching Places List
-**Purpose**: Retrieves a paginated list of places with amenities
-**Key Steps**:
-- Pagination parameter parsing and validation
-- Places retrieval through Processor facade
-- Amenity enrichment for each place
-- Response with complete place information
+    alt amenity_ids provided
+        Processor->>AmenityRepo: findAllByIds(amenity_ids)
+        AmenityRepo->>DB: SELECT * FROM amenities WHERE id IN (...)
+        DB-->>AmenityRepo: rows
+        AmenityRepo-->>Processor: amenities
+        Processor->>Processor: ensure all requested IDs exist
+    end
 
-## Architecture Patterns Demonstrated
+    Processor->>PlaceRepo: save(place, amenities)
+    PlaceRepo->>DB: INSERT INTO places (...)
+    PlaceRepo->>DB: INSERT INTO place_amenities(place_id, amenity_id)*  (for each amenity)
+    DB-->>PlaceRepo: ok
+    PlaceRepo-->>Processor: persisted place (+amenities)
+    Processor-->>ServiceAPI: place DTO
+    ServiceAPI-->>User: 201 CREATED {id, owner, fields..., amenities[]}
+```
 
-- **Facade Pattern**: ServiceAPI, Processor, and Data facades simplify layer interactions
-- **Repository Pattern**: Data access abstraction through Repositories
-- **Service Layer Pattern**: Business logic coordination through Services
-- **Validation Pattern**: Input verification at multiple levels
-- **Enrichment Pattern**: Adding related data (amenities) to responses 
+**Explanation**: Processor validates numeric bounds, binds owner from the authenticated user, verifies amenity IDs against AmenityRepository, then persists the Place and the many-to-many junction rows.
+
+## 3. Review Submission
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant ServiceAPI as ServiceAPI (Presentation)
+    participant Processor as Processor (Business Logic)
+    participant ReviewRepo as ReviewRepository (Persistence)
+    participant PlaceRepo as PlaceRepository (Persistence)
+    participant DB as Database
+
+    User->>ServiceAPI: POST /v1/places/:placeId/reviews {rating, comment}
+    ServiceAPI->>Processor: createReview(placeId, dto, authUserId)
+    Processor->>Processor: validate rating ∈ [1..5], comment length
+    Processor->>PlaceRepo: exists(placeId)?
+    PlaceRepo->>DB: SELECT 1 FROM places WHERE id=?
+    DB-->>PlaceRepo: 0/1
+    alt place not found
+        PlaceRepo-->>Processor: false
+        Processor-->>ServiceAPI: NotFoundError
+        ServiceAPI-->>User: 404 NOT FOUND
+    else place exists
+        PlaceRepo-->>Processor: true
+        Processor->>ReviewRepo: hasUserReviewed(placeId, authUserId)?
+        ReviewRepo->>DB: SELECT id FROM reviews WHERE place_id=? AND user_id=?
+        DB-->>ReviewRepo: none/existing
+        alt already reviewed
+            ReviewRepo-->>Processor: found
+            Processor-->>ServiceAPI: ConflictError
+            ServiceAPI-->>User: 409 CONFLICT
+        else new review
+            ReviewRepo-->>Processor: none
+            Processor->>Processor: set id=UUID4; timestamps
+            Processor->>ReviewRepo: save(review)
+            ReviewRepo->>DB: INSERT INTO reviews (...)
+            DB-->>ReviewRepo: ok
+            ReviewRepo-->>Processor: persisted review
+            Processor-->>ServiceAPI: review DTO
+            ServiceAPI-->>User: 201 CREATED {id, rating, comment, user_id, place_id}
+        end
+    end
+```
+
+**Explanation**: Processor enforces rating bounds, ensures the Place exists, prevents duplicate reviews per user/place, assigns UUID4 and timestamps, and persists via ReviewRepository.
+
+## 4. Fetching a List of Places
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant ServiceAPI as ServiceAPI (Presentation)
+    participant Processor as Processor (Business Logic)
+    participant PlaceRepo as PlaceRepository (Persistence)
+    participant DB as Database
+
+    User->>ServiceAPI: GET /v1/places?lat=&lon=&radius=&min_price=&max_price=&amenity_id=&page=&size=
+    ServiceAPI->>Processor: listPlaces(filters, pagination)
+    Processor->>Processor: normalize filters; defaults; bounds
+    Processor->>PlaceRepo: query(filters, pagination)
+    PlaceRepo->>DB: SELECT p.* FROM places p
+    Note right of DB: WHERE by price range, optional geo (lat/lon or radius),\nAND EXISTS amenity filter via join/junction
+    DB-->>PlaceRepo: rows + total_count
+    PlaceRepo-->>Processor: Place[] + total_count
+    Processor-->>ServiceAPI: map to PlaceDTO[] + page meta
+    ServiceAPI-->>User: 200 OK {items: [...], page, size, total}
+```
+
+**Explanation**: Processor applies filter logic (price, geospatial, amenity). PlaceRepository executes the query (with a junction table for amenities), returning a paginated result set mapped to DTOs.
+
+## Key Design Patterns Demonstrated
+
+- **UUID4 Primary Keys**: All entities use UUID4 for unique identification
+- **Timestamp Tracking**: `CreatedAt` and `UpdatedAt` fields on all entities
+- **Owner Relationship**: Places are linked to their creating user via `owner` field
+- **Rating Validation**: Reviews enforce rating bounds (1-5)
+- **Many-to-Many Relations**: Place-Amenity relationship via junction table
+- **Business Rule Enforcement**: Duplicate review prevention, email uniqueness
+- **Geospatial Filtering**: Location-based place queries with radius support
+- **Pagination**: Standardized pagination with metadata 
