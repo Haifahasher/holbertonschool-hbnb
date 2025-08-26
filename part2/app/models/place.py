@@ -7,10 +7,12 @@ from app.models.base_model import BaseModel
 class Place(BaseModel):
     def __init__(self, title, description, price, latitude, longitude, owner):
         super().__init__()
-        if not len(title > 100):
+        if not title or len(title) > 100:
             raise ValueError("Maximum Characters Reached. Try Below a 100")
-        if not (price >= 0):
-            raise ValueError("Are you really selling it for a negative price?"
+        if (price < 0):
+            raise ValueError("Are you really selling it for a negative price?")
+        if (price == 0):
+            raise ValueError("Umm, Free Housing isn't allowed here.. Sorry")
         if not (-90 <= latitude <= 90):
             raise ValueError("Please enter a valid latitude")
         if not (-180 <= longitude <= 180):
