@@ -2,7 +2,7 @@
 
 
 from app.models.BaseModel import BaseModel
-
+from app.models.user import User
 
 class Place(BaseModel):
     def __init__(self, title, description, price, latitude, longitude, owner):
