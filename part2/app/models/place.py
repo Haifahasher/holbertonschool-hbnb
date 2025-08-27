@@ -26,10 +26,21 @@ class Place(BaseModel):
         self.reviews = []
         self.amenities = []
 
+    if not instance(owner, User):
+        raise ValueError("Owner Validation Failed!")
+
     def add_review(self, review):
         """add review to place"""
         self.reviews.append(review)
 
+    def remove_review(self, review):
+        """delete review of place"""
+        self.reviews.remove(review)
+
     def add_amenity(self, amenity):
         """add amenity to place."""
         self.amenities.append(amenity)
+
+    def remove_amenity(self, amenity):
+        """delete amenity of place"""
+        self.amenities.remove(amenity)
