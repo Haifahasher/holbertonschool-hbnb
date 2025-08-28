@@ -20,3 +20,21 @@ class BaseModel:
             if hasattr(self, key):
                 setattr(self, key, value)
         self.save()
+
+    def to_dict(self):
+        """Convert object to dictionary for JSON serialization"""
+        result = {}
+        for key, value in self.__dict__.items():
+            if isinstance(value, datetime):
+                result[key] = value.isoformat()
+            elif hasattr(value, 'to_dict'):
+                result[key] = value.to_dict()
+            elif isinstance(value, list):
+                result[key] = [item.to_dict() if hasattr(item, 'to_dict') else item for item in value]
+            else:
+                result[key] = value
+        return result
+
+    def __repr__(self):
+        """String representation of the object"""
+        return f"<{self.__class__.__name__} {self.id}>"

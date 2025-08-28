@@ -17,6 +17,9 @@ class Place(BaseModel):
             raise ValueError("Please enter a valid latitude")
         if not (-180 <= longitude <= 180):
             raise ValueError("Please enter a valid longitude")
+        if not isinstance(owner, User):
+            raise ValueError("Owner Validation Failed!")
+        
         self.title = title
         self.description = description
         self.price = price
@@ -26,8 +29,10 @@ class Place(BaseModel):
         self.reviews = []
         self.amenities = []
 
-    if not instance(owner, User):
-        raise ValueError("Owner Validation Failed!")
+    @property
+    def owner_id(self):
+        """Get the owner ID for API responses"""
+        return self.owner.id if self.owner else None
 
     def add_review(self, review):
         """add review to place"""
@@ -44,3 +49,9 @@ class Place(BaseModel):
     def remove_amenity(self, amenity):
         """delete amenity of place"""
         self.amenities.remove(amenity)
+
+    def to_dict(self):
+        """Override to_dict to include owner_id and handle relationships"""
+        result = super().to_dict()
+        result['owner_id'] = self.owner_id
+        return result

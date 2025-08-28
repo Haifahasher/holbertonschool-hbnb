@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 
-from app.models.base_model import BaseModel
+from app.models.BaseModel import BaseModel
 import re
 
 
@@ -10,7 +10,7 @@ EMAIL_REGEX = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
 class User(BaseModel):
     """User Class"""
 
-    def __init__(self, id, first_name, last_name, email, is_admin=False):
+    def __init__(self, first_name, last_name, email, is_admin=False, id=None):
         """init"""
         super().__init__()
 
