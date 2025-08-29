@@ -10,6 +10,13 @@ api = Namespace('places', description='Place operations')
 # Create facade instance
 facade = HBnBFacade()
 
+review_model = api.model('PlaceReview', {
+    'id': fields.String(description='Review ID'),
+    'text': fields.String(description='Text of the review'),
+    'rating': fields.Integer(description='Rating of the place (1-5)'),
+    'user_id': fields.String(attribute='user.id', description='ID of the user'),
+})
+
 # Define models for request/response documentation
 place_model = api.model('Place', {
     'id': fields.String(readonly=True, description='Place ID'),
@@ -29,6 +36,7 @@ place_model = api.model('Place', {
         'id': fields.String(description='Amenity ID'),
         'name': fields.String(description='Amenity name')
     })), description='List of amenities'),
+    'reviews': fields.List(fields.Nested(review_model), description='List of reviews'),
     'created_at': fields.DateTime(readonly=True, description='Creation timestamp'),
     'updated_at': fields.DateTime(readonly=True, description='Last update timestamp')
 })
