@@ -1,110 +1,97 @@
 #!/usr/bin/python3
 
-from flask import request, jsonify
-from flask_restx import Namespace, Resource, fields
+from flask import request
+from flask_restx import Namespace, Resource
 from app.services.facade import HBnBFacade
+from app import bcrypt
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from datetime import datetime
 
-# Create namespace
-api = Namespace('users', description='User operations')
-
-# Create facade instance
+api = Namespace('users')
 facade = HBnBFacade()
 
-# Define models for request/response documentation
-user_model = api.model('User', {
-    'id': fields.String(readonly=True, description='User ID'),
-    'first_name': fields.String(required=True, description='First name'),
-    'last_name': fields.String(required=True, description='Last name'),
-    'email': fields.String(required=True, description='Email address'),
-    'is_admin': fields.Boolean(description='Admin status'),
-    'created_at': fields.DateTime(readonly=True, description='Creation timestamp'),
-    'updated_at': fields.DateTime(readonly=True, description='Last update timestamp')
-})
-
-user_create_model = api.model('UserCreate', {
-    'first_name': fields.String(required=True, description='First name'),
-    'last_name': fields.String(required=True, description='Last name'),
-    'email': fields.String(required=True, description='Email address'),
-    'is_admin': fields.Boolean(description='Admin status')
-})
-
-user_update_model = api.model('UserUpdate', {
-    'first_name': fields.String(description='First name'),
-    'last_name': fields.String(description='Last name'),
-    'email': fields.String(description='Email address'),
-    'is_admin': fields.Boolean(description='Admin status')
-})
+def user_to_dict(user):
+    def convert_datetime(value):
+        return value.isoformat() if isinstance(value, datetime) else value
+    return {
+        'id': getattr(user, 'id', None),
+        'first_name': getattr(user, 'first_name', None),
+        'last_name': getattr(user, 'last_name', None),
+        'email': getattr(user, 'email', None),
+        'is_admin': bool(getattr(user, 'is_admin', False)),
+        'created_at': convert_datetime(getattr(user, 'created_at', None)),
+        'updated_at': convert_datetime(getattr(user, 'updated_at', None)),
+    }
 
 @api.route('/')
 class UserList(Resource):
-    @api.doc('list_users')
-    @api.marshal_list_with(user_model)
     def get(self):
-        """List all users"""
         try:
             users = facade.get_all_users()
-            # Remove password from response (users don't have passwords in this implementation)
-            return users, 200
-        except Exception as e:
-            api.abort(500, f"Internal server error: {str(e)}")
+            return [user_to_dict(user) for user in users], 200
+        except Exception as error:
+            return {'error': f'Internal server error: {str(error)}'}, 500
 
-    @api.doc('create_user')
-    @api.expect(user_create_model)
-    @api.marshal_with(user_model, code=201)
+    @jwt_required()
     def post(self):
-        """Create a new user"""
         try:
-            data = request.get_json()
-            if not data:
-                api.abort(400, "No data provided")
-            
-            # Validate required fields
-            required_fields = ['first_name', 'last_name', 'email']
-            for field in required_fields:
+            current_identity = get_jwt_identity()
+            if not current_identity.get('is_admin'):
+                return {'error': 'Admin privileges required'}, 403
+
+            data = request.get_json() or {}
+            for field in ['first_name', 'last_name', 'email', 'password']:
                 if field not in data:
-                    api.abort(400, f"Missing required field: {field}")
-            
+                    return {'error': f'Missing required field: {field}'}, 400
+
+            if facade.get_user_by_email(data['email']):
+                return {'error': 'Email already registered'}, 400
+
+            data['password'] = bcrypt.generate_password_hash(data['password']).decode('utf-8')
             user = facade.create_user(data)
-            return user, 201
-        except ValueError as e:
-            api.abort(400, str(e))
-        except Exception as e:
-            api.abort(500, f"Internal server error: {str(e)}")
+            return {'id': user.id, 'message': 'User registered successfully'}, 201
+        except ValueError as error:
+            return {'error': str(error)}, 400
+        except Exception as error:
+            return {'error': f'Internal server error: {str(error)}'}, 500
 
 @api.route('/<string:user_id>')
-@api.param('user_id', 'The user identifier')
 class UserResource(Resource):
-    @api.doc('get_user')
-    @api.marshal_with(user_model)
     def get(self, user_id):
-        """Get a user by ID"""
         try:
             user = facade.get_user(user_id)
             if not user:
-                api.abort(404, "User not found")
-            return user, 200
-        except Exception as e:
-            if "not found" in str(e).lower():
-                api.abort(404, str(e))
-            else:
-                api.abort(500, f"Internal server error: {str(e)}")
+                return {'error': 'User not found'}, 404
+            return user_to_dict(user), 200
+        except Exception as error:
+            return {'error': f'Internal server error: {str(error)}'}, 500
 
-    @api.doc('update_user')
-    @api.expect(user_update_model)
-    @api.marshal_with(user_model)
+    @jwt_required()
     def put(self, user_id):
-        """Update a user"""
         try:
-            data = request.get_json()
-            if not data:
-                api.abort(400, "No data provided")
-            
+            current_identity = get_jwt_identity()
+            data = request.get_json() or {}
+
+            if current_identity.get('is_admin'):
+                new_email = data.get('email')
+                if new_email:
+                    existing_user = facade.get_user_by_email(new_email)
+                    if existing_user and str(existing_user.id) != str(user_id):
+                        return {'error': 'Email already in use'}, 400
+                user = facade.update_user(user_id, data)
+                return user_to_dict(user), 200
+
+            if str(user_id) != str(current_identity['id']):
+                return {'error': 'Unauthorized action'}, 403
+            if 'email' in data or 'password' in data:
+                return {'error': 'You cannot modify email or password'}, 400
+
             user = facade.update_user(user_id, data)
-            return user, 200
-        except ValueError as e:
-            if "not found" in str(e).lower():
-                api.abort(404, str(e))
-            else:
-                api.abort(400, str(e))
-        except Exception as e:
-            api.abort(500, f"Internal server error: {str(e)}")
+            return user_to_dict(user), 200
+        except ValueError as error:
+            message = str(error)
+            if 'not found' in message.lower():
+                return {'error': message}, 404
+            return {'error': message}, 400
+        except Exception as error:
+            return {'error': f'Internal server error: {str(error)}'}, 500

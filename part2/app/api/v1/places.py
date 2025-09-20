@@ -1,160 +1,106 @@
 #!/usr/bin/python3
 
-from flask import request, jsonify
-from flask_restx import Namespace, Resource, fields
+from flask import request
+from flask_restx import Namespace, Resource
 from app.services.facade import HBnBFacade
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
-# Create namespace
-api = Namespace('places', description='Place operations')
-
-# Create facade instance
+api = Namespace('places')
 facade = HBnBFacade()
 
-review_model = api.model('PlaceReview', {
-    'id': fields.String(description='Review ID'),
-    'text': fields.String(description='Text of the review'),
-    'rating': fields.Integer(description='Rating of the place (1-5)'),
-    'user_id': fields.String(attribute='user.id', description='ID of the user'),
-})
-
-# Define models for request/response documentation
-place_model = api.model('Place', {
-    'id': fields.String(readonly=True, description='Place ID'),
-    'title': fields.String(required=True, description='Place title'),
-    'description': fields.String(description='Place description'),
-    'price': fields.Float(required=True, description='Place price'),
-    'latitude': fields.Float(required=True, description='Latitude'),
-    'longitude': fields.Float(required=True, description='Longitude'),
-    'owner_id': fields.String(description='Owner user ID'),
-    'owner': fields.Nested(api.model('Owner', {
-        'id': fields.String(description='Owner ID'),
-        'first_name': fields.String(description='Owner first name'),
-        'last_name': fields.String(description='Owner last name'),
-        'email': fields.String(description='Owner email')
-    }), description='Owner information'),
-    'amenities': fields.List(fields.Nested(api.model('Amenity', {
-        'id': fields.String(description='Amenity ID'),
-        'name': fields.String(description='Amenity name')
-    })), description='List of amenities'),
-    'reviews': fields.List(fields.Nested(review_model), description='List of reviews'),
-    'created_at': fields.DateTime(readonly=True, description='Creation timestamp'),
-    'updated_at': fields.DateTime(readonly=True, description='Last update timestamp')
-})
-
-place_create_model = api.model('PlaceCreate', {
-    'title': fields.String(required=True, description='Place title'),
-    'description': fields.String(description='Place description'),
-    'price': fields.Float(required=True, description='Place price'),
-    'latitude': fields.Float(required=True, description='Latitude'),
-    'longitude': fields.Float(required=True, description='Longitude'),
-    'owner_id': fields.String(required=True, description='Owner user ID')
-})
-
-place_update_model = api.model('PlaceUpdate', {
-    'title': fields.String(description='Place title'),
-    'description': fields.String(description='Place description'),
-    'price': fields.Float(description='Place price'),
-    'latitude': fields.Float(description='Latitude'),
-    'longitude': fields.Float(description='Longitude'),
-    'owner_id': fields.String(description='Owner user ID')
-})
+def place_to_dict(place):
+    return {
+        'id': getattr(place, 'id', None),
+        'title': getattr(place, 'title', None),
+        'description': getattr(place, 'description', None),
+        'price': getattr(place, 'price', None),
+        'latitude': getattr(place, 'latitude', None),
+        'longitude': getattr(place, 'longitude', None),
+        'owner_id': getattr(getattr(place, 'owner', None), 'id', None) or getattr(place, 'owner_id', None),
+    }
 
 @api.route('/')
 class PlaceList(Resource):
-    @api.doc('list_places')
-    @api.marshal_list_with(place_model)
     def get(self):
-        """List all places"""
         try:
             places = facade.get_all_places()
-            return places, 200
-        except Exception as e:
-            api.abort(500, f"Internal server error: {str(e)}")
+            return [place_to_dict(place) for place in places], 200
+        except Exception as error:
+            return {'error': f'Internal server error: {str(error)}'}, 500
 
-    @api.doc('create_place')
-    @api.expect(place_create_model)
-    @api.marshal_with(place_model, code=201)
+    @jwt_required()
     def post(self):
-        """Create a new place"""
         try:
-            data = request.get_json()
-            if not data:
-                api.abort(400, "No data provided")
-            
-            # Validate required fields
-            required_fields = ['title', 'description', 'price', 'latitude', 'longitude', 'owner_id']
-            for field in required_fields:
+            current_identity = get_jwt_identity()
+            data = request.get_json() or {}
+
+            for field in ['title', 'description', 'price', 'latitude', 'longitude']:
                 if field not in data:
-                    api.abort(400, f"Missing required field: {field}")
-            
-            # Validate numeric fields
+                    return {'error': f'Missing required field: {field}'}, 400
+
             try:
                 data['price'] = float(data['price'])
                 data['latitude'] = float(data['latitude'])
                 data['longitude'] = float(data['longitude'])
             except (ValueError, TypeError):
-                api.abort(400, "Price, latitude, and longitude must be valid numbers")
-            
+                return {'error': 'Price, latitude, and longitude must be valid numbers'}, 400
+
+            data['owner_id'] = current_identity['id']
             place = facade.create_place(data)
-            return place, 201
-        except ValueError as e:
-            api.abort(400, str(e))
-        except Exception as e:
-            api.abort(500, f"Internal server error: {str(e)}")
+            return place_to_dict(place), 201
+        except ValueError as error:
+            return {'error': str(error)}, 400
+        except Exception as error:
+            return {'error': f'Internal server error: {str(error)}'}, 500
 
 @api.route('/<string:place_id>')
-@api.param('place_id', 'The place identifier')
 class PlaceResource(Resource):
-    @api.doc('get_place')
-    @api.marshal_with(place_model)
     def get(self, place_id):
-        """Get a place by ID"""
         try:
             place = facade.get_place(place_id)
             if not place:
-                api.abort(404, "Place not found")
-            return place, 200
-        except Exception as e:
-            if "not found" in str(e).lower():
-                api.abort(404, str(e))
-            else:
-                api.abort(500, f"Internal server error: {str(e)}")
+                return {'error': 'Place not found'}, 404
+            return place_to_dict(place), 200
+        except Exception as error:
+            return {'error': f'Internal server error: {str(error)}'}, 500
 
-    @api.doc('update_place')
-    @api.expect(place_update_model)
-    @api.marshal_with(place_model)
+    @jwt_required()
     def put(self, place_id):
-        """Update a place"""
         try:
-            data = request.get_json()
-            if not data:
-                api.abort(400, "No data provided")
-            
-            # Validate numeric fields if provided
+            current_identity = get_jwt_identity()
+            data = request.get_json() or {}
+
             if 'price' in data:
                 try:
                     data['price'] = float(data['price'])
                 except (ValueError, TypeError):
-                    api.abort(400, "Price must be a valid number")
-            
+                    return {'error': 'Price must be a valid number'}, 400
             if 'latitude' in data:
                 try:
                     data['latitude'] = float(data['latitude'])
                 except (ValueError, TypeError):
-                    api.abort(400, "Latitude must be a valid number")
-            
+                    return {'error': 'Latitude must be a valid number'}, 400
             if 'longitude' in data:
                 try:
                     data['longitude'] = float(data['longitude'])
                 except (ValueError, TypeError):
-                    api.abort(400, "Longitude must be a valid number")
-            
-            place = facade.update_place(place_id, data)
-            return place, 200
-        except ValueError as e:
-            if "not found" in str(e).lower():
-                api.abort(404, str(e))
-            else:
-                api.abort(400, str(e))
-        except Exception as e:
-            api.abort(500, f"Internal server error: {str(e)}")
+                    return {'error': 'Longitude must be a valid number'}, 400
+
+            place = facade.get_place(place_id)
+            if not place:
+                return {'error': 'Place not found'}, 404
+
+            owner_id = getattr(getattr(place, 'owner', None), 'id', None)
+            is_admin = bool(current_identity.get('is_admin', False))
+            if not is_admin and str(owner_id) != str(current_identity['id']):
+                return {'error': 'Unauthorized action'}, 403
+
+            updated_place = facade.update_place(place_id, data)
+            return place_to_dict(updated_place), 200
+        except ValueError as error:
+            message = str(error)
+            if 'not found' in message.lower():
+                return {'error': message}, 404
+            return {'error': message}, 400
+        except Exception as error:
+            return {'error': f'Internal server error: {str(error)}'}, 500
