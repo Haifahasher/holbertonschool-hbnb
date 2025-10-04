@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 
+from app.models.BaseModel import BaseModel
 from sqlalchemy import Column, String, Boolean, DateTime
 from sqlalchemy.orm import relationship
 from flask_bcrypt import Bcrypt
@@ -11,7 +12,7 @@ import re
 bcrypt = Bcrypt()
 EMAIL_REGEX = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
 
-class User:
+class User(BaseModel):
     """User Class"""
     __tablename__ = 'users'
 

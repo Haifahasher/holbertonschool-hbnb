@@ -4,8 +4,11 @@
 import uuid
 from datetime import datetime
 from sqlalchemy import Column, String, DateTime
+from sqlalchemy.ext.declarative import declarative_base
 
-class BaseModel:
+Base = declarative_base()
+
+class BaseModel(Base):
     """Base model class with common attributes"""
     __abstract__ = True
     

@@ -30,7 +30,7 @@ def init_database():
         print("✓ Tables created successfully")
         
         # Check if data already exists
-        if db.session.query(User).first():
+        if db.session.query(User).count() > 0:
             print("Database already contains data. Skipping initial data insertion.")
             return
         

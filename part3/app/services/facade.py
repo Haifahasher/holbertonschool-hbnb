@@ -196,7 +196,8 @@ class HBnBFacade:
                 raise ValueError("User has already reviewed this place")
             
             review = Review(
-                text=review_data['text'],
+                title=review_data.get('title', ''),
+                comment=review_data['comment'],
                 rating=review_data['rating'],
                 place_id=review_data['place_id'],
                 user_id=review_data['user_id']
@@ -222,6 +223,10 @@ class HBnBFacade:
         """Get all reviews by a user"""
         return self.review_repo.get_by_user(user_id)
 
+    def get_review_by_user_and_place(self, user_id, place_id):
+        """Get review by user and place"""
+        return self.review_repo.get_by_place_and_user(place_id, user_id)
+
     def update_review(self, review_id, review_data):
         """Update review information"""
         review = self.get_review(review_id)
@@ -229,8 +234,10 @@ class HBnBFacade:
             raise ValueError("Review not found")
         
         try:
-            if 'text' in review_data:
-                review.text = review_data['text']
+            if 'title' in review_data:
+                review.title = review_data['title']
+            if 'comment' in review_data:
+                review.comment = review_data['comment']
             if 'rating' in review_data:
                 review.rating = review_data['rating']
             
