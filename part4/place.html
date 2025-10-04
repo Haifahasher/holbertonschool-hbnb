@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>HBnB • Place Details</title>
+    <link rel="icon" href="images/icon.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <a class="logo" href="index.html">
+            <img src="https://github.com/Holberton-Uy/hbnb-doc/blob/main/part4/base_files/images/logo.png?raw=true" alt="HBnB logo">
+            <span>HBnB</span>
+        </a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a class="login-button" href="login.html">Login</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="place-details">
+            <h1 id="place-name">Place Name</h1>
+
+            <div class="place-info">
+                <div class="panel">
+                    <p><strong>Host:</strong> <span id="place-host">Host Name</span></p>
+                    <p><strong>Price:</strong> <span id="place-price">$0 / night</span></p>
+                    <p id="place-description">Description goes here.</p>
+
+                    <div>
+                        <h3>Amenities</h3>
+                        <div id="amenities" class="amenities">
+                            <span class="badge">Wi-Fi</span>
+                            <span class="badge">Kitchen</span>
+                            <span class="badge">AC</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <img src="images/sample_place.jpg" alt="Place image" style="width:100%;border-radius:10px;">
+                </div>
+            </div>
+        </section>
+
+        <section id="reviews">
+            <h2 style="margin-left:20px;">Reviews</h2>
+
+            <article class="review-card">
+                <h4>Nice stay</h4>
+                <p>by <strong>Alice</strong> • Rating: 5</p>
+                <p>Loved the location and the host was helpful.</p>
+            </article>
+
+            <article class="review-card">
+                <h4>Comfortable</h4>
+                <p>by <strong>Bob</strong> • Rating: 4</p>
+                <p>Clean room and quiet area.</p>
+            </article>
+        </section>
+
+        <section class="add-review">
+            <a id="add-review-link" class="details-button" href="add_review.html">Add a Review</a>
+        </section>
+    </main>
+
+    <footer>
+        <small>All rights reserved.</small>
+    </footer>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

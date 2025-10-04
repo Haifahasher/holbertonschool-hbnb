@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>HBnB • Places</title>
+    <link rel="icon" href="images/icon.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <a class="logo" href="index.html">
+            <img src="https://github.com/Holberton-Uy/hbnb-doc/blob/main/part4/base_files/images/logo.png?raw=true" alt="HBnB logo">
+            <span>HBnB</span>
+        </a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a class="login-button" href="login.html">Login</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Find a place you love</h1>
+            <p>Browse places. Filter by country. Click for details.</p>
+            <label>
+                Country
+                <select id="country-filter">
+                    <option value="">All</option>
+                    <option value="USA">USA</option>
+                    <option value="France">France</option>
+                    <option value="Japan">Japan</option>
+                </select>
+            </label>
+        </section>
+
+        <section id="places" class="grid">
+            <article class="place-card">
+                <h3>Cozy Studio</h3>
+                <p>$60 / night</p>
+                <a class="details-button" href="place.html?id=sample-1">View Details</a>
+            </article>
+
+            <article class="place-card">
+                <h3>Beach House</h3>
+                <p>$180 / night</p>
+                <a class="details-button" href="place.html?id=sample-2">View Details</a>
+            </article>
+
+            <article class="place-card">
+                <h3>Mountain Cabin</h3>
+                <p>$120 / night</p>
+                <a class="details-button" href="place.html?id=sample-3">View Details</a>
+            </article>
+        </section>
+    </main>
+
+    <footer>
+        <small>All rights reserved.</small>
+    </footer>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

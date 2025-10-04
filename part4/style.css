@@ -1,0 +1,226 @@
+﻿:root {
+    --bg: #0f172a;
+    --card: #111827;
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+    --brand: #22d3ee;
+    --brand-ink: #0e7490;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    background: linear-gradient(180deg, #0b1220 0%, var(--bg) 100%);
+    color: var(--text);
+    line-height: 1.5;
+}
+
+a {
+    color: var(--brand);
+    text-decoration: none;
+}
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+header, footer {
+    background: rgba(17, 24, 39, 0.7);
+    backdrop-filter: blur(6px);
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid #1f2937;
+}
+
+.logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+    .logo img {
+        width: 32px;
+        height: 32px;
+        display: block;
+    }
+
+nav {
+    display: flex;
+    gap: 14px;
+}
+
+.login-button {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--brand);
+    color: #0a0a0a;
+    font-weight: 700;
+    border: 1px solid var(--brand-ink);
+}
+
+    .login-button:hover {
+        filter: brightness(1.05);
+        text-decoration: none;
+    }
+
+main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.hero {
+    margin: 20px 0 10px;
+    display: grid;
+    gap: 8px;
+}
+
+.grid {
+    display: grid;
+    gap: 16px;
+}
+
+@media (min-width: 720px) {
+    .grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.place-card, .review-card {
+    background: var(--card);
+    border: 1px solid #1f2937;
+    border-radius: 10px;
+    margin: 20px;
+    padding: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+
+    .place-card h3, .review-card h4 {
+        margin: 0 0 6px 0;
+    }
+
+.details-button {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #0ea5e9;
+    color: #03111a;
+    font-weight: 600;
+    border: 1px solid #1e40af;
+}
+
+    .details-button:hover {
+        filter: brightness(1.05);
+        text-decoration: none;
+    }
+
+.place-details {
+    background: var(--card);
+    border: 1px solid #1f2937;
+    border-radius: 10px;
+    margin: 20px;
+    padding: 10px;
+}
+
+.place-info {
+    display: grid;
+    gap: 10px;
+}
+
+@media (min-width: 720px) {
+    .place-info {
+        grid-template-columns: 2fr 1fr;
+        align-items: start;
+    }
+}
+
+.panel {
+    background: #0b1220;
+    border: 1px solid #1f2937;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.amenities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.badge {
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #111827;
+    border: 1px solid #374151;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.add-review {
+    margin: 20px;
+    padding: 10px;
+    background: var(--card);
+    border: 1px solid #1f2937;
+    border-radius: 10px;
+}
+
+form.form {
+    display: grid;
+    gap: 10px;
+}
+
+input[type="email"],
+input[type="password"],
+input[type="text"],
+input[type="number"],
+textarea,
+select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #374151;
+    background: #0b1220;
+    color: var(--text);
+}
+
+button, input[type="submit"] {
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: var(--brand);
+    color: #0a0a0a;
+    font-weight: 700;
+    border: 1px solid var(--brand-ink);
+    cursor: pointer;
+}
+
+    button:hover, input[type="submit"]:hover {
+        filter: brightness(1.05);
+    }
+
+footer {
+    margin-top: 20px;
+    padding: 16px 20px;
+    text-align: center;
+    color: var(--muted);
+    border-top: 1px solid #1f2937;
+}
