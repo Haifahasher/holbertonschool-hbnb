@@ -21,27 +21,29 @@
 
     <main>
         <section class="add-review">
-            <h1>Add a Review</h1>
+            <h1>✍️ Share Your Experience</h1>
+            <p style="text-align: center; margin-bottom: 2rem;">Help other travelers by sharing your review and rating.</p>
             <form id="review-form" class="form">
                 <label>
-                    Title
-                    <input id="review-title" type="text" name="title" required>
+                    📝 Review Title
+                    <input id="review-title" type="text" name="title" placeholder="Give your review a title" required>
                 </label>
                 <label>
-                    Rating
-                    <input id="review-rating" type="number" name="rating" min="1" max="5" required>
+                    ⭐ Rating (1-5 stars)
+                    <input id="review-rating" type="number" name="rating" min="1" max="5" placeholder="5" required>
                 </label>
                 <label>
-                    Comment
-                    <textarea id="review-comment" name="comment" rows="5" required></textarea>
+                    💭 Your Review
+                    <textarea id="review-comment" name="comment" rows="6" placeholder="Tell us about your stay..." required></textarea>
                 </label>
-                <input type="submit" value="Submit Review">
+                <input type="submit" value="Submit Review →">
             </form>
         </section>
     </main>
 
     <footer>
-        <small>All rights reserved.</small>
+        <p>© 2025 HBnB - Find Your Perfect Stay</p>
+        <p><small>Made with ❤️ for travelers around the world</small></p>
     </footer>
 
     <script src="script.js"></script>

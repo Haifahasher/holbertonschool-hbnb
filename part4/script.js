@@ -390,10 +390,16 @@ onDomReady(() => {
           const password = document.getElementById("password").value;
           const errorBox = document.getElementById("login-error");
           
-          if (errorBox) errorBox.textContent = "";
+          if (errorBox) {
+            errorBox.textContent = "";
+            errorBox.style.display = "none";
+          }
           
           if (!email || !password) {
-            if (errorBox) errorBox.textContent = "Please enter email and password.";
+            if (errorBox) {
+              errorBox.textContent = "Please enter email and password.";
+              errorBox.style.display = "block";
+            }
             return;
           }
           
@@ -401,7 +407,10 @@ onDomReady(() => {
             await loginUser(email, password);
             window.location.href = "index.html";
           } catch (err) {
-            if (errorBox) errorBox.textContent = String(err.message || err);
+            if (errorBox) {
+              errorBox.textContent = String(err.message || err);
+              errorBox.style.display = "block";
+            }
           }
         });
       }

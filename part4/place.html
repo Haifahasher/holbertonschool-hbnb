@@ -21,53 +21,46 @@
 
     <main>
         <section class="place-details">
-            <h1 id="place-name">Place Name</h1>
+            <h1 id="place-name">✨ Loading...</h1>
 
             <div class="place-info">
                 <div class="panel">
-                    <p><strong>Host:</strong> <span id="place-host">Host Name</span></p>
-                    <p><strong>Price:</strong> <span id="place-price">$0 / night</span></p>
-                    <p id="place-description">Description goes here.</p>
+                    <p><strong>👤 Host:</strong> <span id="place-host">Loading...</span></p>
+                    <p><strong>💰 Price:</strong> <span id="place-price">$0 / night</span></p>
+                    <p id="place-description" style="margin-top: 1rem;">Description loading...</p>
 
                     <div>
-                        <h3>Amenities</h3>
+                        <h3>🎯 Amenities</h3>
                         <div id="amenities" class="amenities">
                             <span class="badge">Wi-Fi</span>
                             <span class="badge">Kitchen</span>
                             <span class="badge">AC</span>
+                            <span class="badge">Pool</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="panel">
-                    <img src="images/sample_place.jpg" alt="Place image" style="width:100%;border-radius:10px;">
+                    <div style="width:100%;height:300px;border-radius:12px;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);display:flex;align-items:center;justify-content:center;color:white;font-size:3rem;">
+                        🏡
+                    </div>
                 </div>
             </div>
         </section>
 
         <section id="reviews">
-            <h2 style="margin-left:20px;">Reviews</h2>
-
-            <article class="review-card">
-                <h4>Nice stay</h4>
-                <p>by <strong>Alice</strong> • Rating: 5</p>
-                <p>Loved the location and the host was helpful.</p>
-            </article>
-
-            <article class="review-card">
-                <h4>Comfortable</h4>
-                <p>by <strong>Bob</strong> • Rating: 4</p>
-                <p>Clean room and quiet area.</p>
-            </article>
+            <h2>⭐ Guest Reviews</h2>
+            <!-- Reviews will be loaded dynamically -->
         </section>
 
-        <section class="add-review">
-            <a id="add-review-link" class="details-button" href="add_review.html">Add a Review</a>
+        <section class="add-review" style="text-align: center;">
+            <a id="add-review-link" class="details-button" href="add_review.html">✍️ Write a Review</a>
         </section>
     </main>
 
     <footer>
-        <small>All rights reserved.</small>
+        <p>© 2025 HBnB - Find Your Perfect Stay</p>
+        <p><small>Made with ❤️ for travelers around the world</small></p>
     </footer>
 
     <script src="script.js"></script>
