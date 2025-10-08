@@ -51,6 +51,10 @@ class User(BaseModel):
         """Check if provided password matches hash"""
         return bcrypt.check_password_hash(self.password_hash, password)
 
+    def verify_password(self, password):
+        """Verify password - alias for check_password"""
+        return self.check_password(password)
+
     @property
     def password(self):
         """Password property - should not be accessible"""

@@ -6,11 +6,13 @@ from flask_restx import Api
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 from config import config
 from app.models.BaseModel import Base
 
 db = SQLAlchemy(model_class=Base)
 bcrypt = Bcrypt()
+jwt = JWTManager()
 
 def create_app(config_name="default"):
     app = Flask(__name__)
@@ -19,15 +21,19 @@ def create_app(config_name="default"):
     app.config.from_object(config[config_name])
     
     # Enable CORS for frontend integration
-    CORS(app, origins=['http://127.0.0.1:5500', 'http://localhost:5500', 'file://'])
+    CORS(app, origins=['http://127.0.0.1:5500', 'http://localhost:5500', 'http://127.0.0.1:8000', 'http://localhost:8000', 'file://'], supports_credentials=True)
     
     # Database configuration
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///hbnb.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
+    # JWT Configuration
+    app.config['JWT_SECRET_KEY'] = 'your-secret-key-change-this-in-production'
+    
     # Initialize extensions
     db.init_app(app)
     bcrypt.init_app(app)
+    jwt.init_app(app)
     
     # Create database tables
     with app.app_context():
